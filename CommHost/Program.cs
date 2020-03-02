@@ -13,7 +13,6 @@ using NLog.Extensions.Logging;
 
 namespace CommHost {
 
-    
     #region webserver
     public class WebServer {
 
@@ -30,7 +29,7 @@ namespace CommHost {
 
     }
     #endregion
-    
+
     class Program {
 
         private static async Task Main(string[] args) {
