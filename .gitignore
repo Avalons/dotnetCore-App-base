@@ -18,6 +18,7 @@ mono_crash.*
 
 #Jetbrains
 .idea
+*.DotSettings.user
 
 # Build results
 [Dd]ebug/
