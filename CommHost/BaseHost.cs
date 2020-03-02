@@ -17,29 +17,24 @@ namespace CommHost {
 
     public class BaseHost {
 
-        #region webserver
-        public class WebServer {
+        private IHost _host;
+        private IHostBuilder _builder;
+        private int _webPort;
 
-            public void Configure(IConfiguration config, IApplicationBuilder app, IWebHostEnvironment env, ILogger<WebServer> logging) {
+        public async Task runAsync<TWebServer>() {
 
-                logging.LogInformation($"EnvironmentName:{env.EnvironmentName}");
-                logging.LogInformation($"WebPort:{config["WebPort"]}");
+            _builder.ConfigureWebHostDefaults(webHostBuilder => {
 
-                app.UseRouting()
-                    .UseEndpoints(endpoints => {
-                        endpoints.MapGet("/", async context => {
-                            await context.Response.WriteAsync("Hello World!");
-                        });
-                    });
+                webHostBuilder.ConfigureKestrel(opt => {
+                    opt.Limits.MinRequestBodyDataRate = null;
+                    opt.ListenAnyIP(_webPort);
+                });
 
-            }
+                webHostBuilder.UseStartup<WebServer>();
 
-        }
-        #endregion
+            });
 
-        private readonly IHost _host;
-
-        public async Task runAsync() {
+            _host = _builder.Build();
             await _host.RunAsync();
         }
 
@@ -49,11 +44,13 @@ namespace CommHost {
 
         public BaseHost(string[] args) {
 
-            var builder = Host.CreateDefaultBuilder(args);
-            var logger = LogManager.GetCurrentClassLogger();
+            _builder = Host.CreateDefaultBuilder(args);
+            var logger = LogManager.GetCurrentClassLogger(); 
 
             #region get config
             var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+            LogManager.Configuration = new XmlLoggingConfiguration("nlog." + env + ".config", true);
+            logger.Info($"EnvironmentName:{env}");
 
             var config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                 .AddEnvironmentVariables(prefix: "DOTNET_")
@@ -61,12 +58,13 @@ namespace CommHost {
                 .AddCommandLine(args)
                 .Build();
 
-            var webPort = int.Parse(config["WebPort"]);
+            _webPort = int.Parse(config["WebPort"]);
+            logger.Info($"WebPort:{_webPort}");
             #endregion
 
             #region nlog
-            LogManager.Configuration = new XmlLoggingConfiguration("nlog." + env + ".config", true);
-            builder.ConfigureLogging(loggingBuilder => {
+           
+            _builder.ConfigureLogging(loggingBuilder => {
                 loggingBuilder.ClearProviders();
                 loggingBuilder.SetMinimumLevel(LogLevel.Trace);
                 loggingBuilder.AddNLog(config);
@@ -83,19 +81,6 @@ namespace CommHost {
             System.Net.ServicePointManager.MaxServicePoints = 999999;
             System.Net.ServicePointManager.Expect100Continue = false;
             #endregion
-
-            builder.ConfigureWebHostDefaults(webHostBuilder => {
-
-                webHostBuilder.ConfigureKestrel(opt => {
-                    opt.Limits.MinRequestBodyDataRate = null;
-                    opt.ListenAnyIP(webPort);
-                });
-
-                webHostBuilder.UseStartup<WebServer>();
-
-            });
-
-            _host = builder.Build();
 
         }
 

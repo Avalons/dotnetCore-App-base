@@ -13,11 +13,29 @@ using NLog.Extensions.Logging;
 
 namespace CommHost {
 
+    
+    #region webserver
+    public class WebServer {
+
+        public void Configure(IConfiguration config, IApplicationBuilder app, IWebHostEnvironment env, ILogger<WebServer> logging) {
+
+            app.UseRouting()
+                .UseEndpoints(endpoints => {
+                    endpoints.MapGet("/", async context => {
+                        await context.Response.WriteAsync("Hello World!");
+                    });
+                });
+
+        }
+
+    }
+    #endregion
+    
     class Program {
 
         private static async Task Main(string[] args) {
             var host = new BaseHost(args);
-            await host.runAsync();
+            await host.runAsync<WebServer>();
         }
 
     }
