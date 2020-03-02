@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using CommHost.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -25,6 +26,7 @@ namespace CommHost {
 
             _builder.ConfigureWebHostDefaults(webHostBuilder => {
 
+                webHostBuilder.CaptureStartupErrors(false);
                 webHostBuilder.ConfigureKestrel(opt => {
                     opt.Limits.MinRequestBodyDataRate = null;
                     opt.ListenAnyIP(_webPort);
