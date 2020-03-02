@@ -47,7 +47,7 @@ namespace CommHost {
         public BaseHost(string[] args) {
 
             _builder = Host.CreateDefaultBuilder(args);
-            var logger = LogManager.GetCurrentClassLogger(); 
+            var logger = LogManager.GetCurrentClassLogger();
 
             #region get config
             var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
@@ -65,7 +65,6 @@ namespace CommHost {
             #endregion
 
             #region nlog
-           
             _builder.ConfigureLogging(loggingBuilder => {
                 loggingBuilder.ClearProviders();
                 loggingBuilder.SetMinimumLevel(LogLevel.Trace);
